@@ -5,43 +5,43 @@ from typing import List
 from config import ROOT_DIR
 
 def get_cache_path() -> str:
-    """
+    
     Gets the path to the cache file.
 
     Returns:
         path (str): The path to the cache folder
-    """
+    
     return os.path.join(ROOT_DIR, '.mp')
 
 def get_afm_cache_path() -> str:
-    """
+    
     Gets the path to the Affiliate Marketing cache file.
 
     Returns:
         path (str): The path to the AFM cache folder
-    """
+    
     return os.path.join(get_cache_path(), 'afm.json')
 
 def get_twitter_cache_path() -> str:
-    """
+    
     Gets the path to the Twitter cache file.
 
     Returns:
         path (str): The path to the Twitter cache folder
-    """
+    
     return os.path.join(get_cache_path(), 'twitter.json')
 
 def get_youtube_cache_path() -> str:
-    """
+    
     Gets the path to the YouTube cache file.
 
     Returns:
         path (str): The path to the YouTube cache folder
-    """
+    
     return os.path.join(get_cache_path(), 'youtube.json')
 
 def get_provider_cache_path(provider: str) -> str:
-    """
+    
     Gets the cache path for a supported account provider.
 
     Args:
@@ -52,7 +52,7 @@ def get_provider_cache_path(provider: str) -> str:
 
     Raises:
         ValueError: If the provider is unsupported
-    """
+    
     if provider == "twitter":
         return get_twitter_cache_path()
     if provider == "youtube":
@@ -61,7 +61,7 @@ def get_provider_cache_path(provider: str) -> str:
     raise ValueError(f"Unsupported provider '{provider}'. Expected 'twitter' or 'youtube'.")
 
 def get_accounts(provider: str) -> List[dict]:
-    """
+    
     Gets the accounts from the cache.
 
     Args:
@@ -69,11 +69,10 @@ def get_accounts(provider: str) -> List[dict]:
 
     Returns:
         account (List[dict]): The accounts
-    """
+    
     cache_path = get_provider_cache_path(provider)
 
     if not os.path.exists(cache_path):
-        # Create the cache file
         with open(cache_path, 'w') as file:
             json.dump({
                 "accounts": []
@@ -88,11 +87,26 @@ def get_accounts(provider: str) -> List[dict]:
         if 'accounts' not in parsed:
             return []
 
-        # Get accounts dictionary
         return parsed['accounts']
 
+def account_exists(provider: str, account_id: str) -> bool:
+    
+    Checks whether an account with the given ID is already in the cache.
+
+    Useful for avoiding duplicate entries before calling add_account().
+
+    Args:
+        provider (str): The provider to check ("twitter" or "youtube")
+        account_id (str): The account ID to look for
+
+    Returns:
+        bool: True if the account exists in the cache, False otherwise
+    
+    accounts = get_accounts(provider)
+    return any(account.get('id') == account_id for account in accounts)
+
 def add_account(provider: str, account: dict) -> None:
-    """
+    
     Adds an account to the cache.
 
     Args:
@@ -101,23 +115,19 @@ def add_account(provider: str, account: dict) -> None:
 
     Returns:
         None
-    """
+    
     cache_path = get_provider_cache_path(provider)
 
-    # Get the current accounts
     accounts = get_accounts(provider)
-
-    # Add the new account
     accounts.append(account)
 
-    # Write the new accounts to the cache
     with open(cache_path, 'w') as file:
         json.dump({
             "accounts": accounts
         }, file, indent=4)
 
 def remove_account(provider: str, account_id: str) -> None:
-    """
+    
     Removes an account from the cache.
 
     Args:
@@ -126,14 +136,10 @@ def remove_account(provider: str, account_id: str) -> None:
 
     Returns:
         None
-    """
-    # Get the current accounts
+    
     accounts = get_accounts(provider)
-
-    # Remove the account
     accounts = [account for account in accounts if account['id'] != account_id]
 
-    # Write the new accounts to the cache
     cache_path = get_provider_cache_path(provider)
 
     with open(cache_path, 'w') as file:
@@ -142,14 +148,13 @@ def remove_account(provider: str, account_id: str) -> None:
         }, file, indent=4)
 
 def get_products() -> List[dict]:
-    """
+    
     Gets the products from the cache.
 
     Returns:
         products (List[dict]): The products
-    """
+    
     if not os.path.exists(get_afm_cache_path()):
-        # Create the cache file
         with open(get_afm_cache_path(), 'w') as file:
             json.dump({
                 "products": []
@@ -157,12 +162,10 @@ def get_products() -> List[dict]:
 
     with open(get_afm_cache_path(), 'r') as file:
         parsed = json.load(file)
-
-        # Get the products
         return parsed["products"]
-    
+
 def add_product(product: dict) -> None:
-    """
+    
     Adds a product to the cache.
 
     Args:
@@ -170,24 +173,20 @@ def add_product(product: dict) -> None:
 
     Returns:
         None
-    """
-    # Get the current products
+    
     products = get_products()
-
-    # Add the new product
     products.append(product)
 
-    # Write the new products to the cache
     with open(get_afm_cache_path(), 'w') as file:
         json.dump({
             "products": products
         }, file, indent=4)
-    
+
 def get_results_cache_path() -> str:
-    """
+    
     Gets the path to the results cache file.
 
     Returns:
         path (str): The path to the results cache folder
-    """
+    
     return os.path.join(get_cache_path(), 'scraper_results.csv')
